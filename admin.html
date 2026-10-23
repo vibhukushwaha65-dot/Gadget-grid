@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gadget_ — Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============================================================ -->
+  <!-- ================ ADMIN PANEL VIEW ========================== -->
+  <!-- ============================================================ -->
+  <div id="admin-view">
+
+    <aside class="admin-sidebar-dark">
+      <div class="sidebar-logo">
+        <span class="logo-mark admin-mark">G_</span>
+        <span class="logo-word">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-btn active" data-section="admin-dashboard" onclick="showAdminSection('dashboard')">Dashboard</button>
+        <button class="sidebar-btn" data-section="admin-customers" onclick="showAdminSection('customers')">Customers</button>
+        <button class="sidebar-btn" data-section="admin-products" onclick="showAdminSection('products')">Products</button>
+        <button class="sidebar-btn" data-section="admin-transactions" onclick="showAdminSection('transactions')">Sales &amp; Transactions</button>
+        <button class="sidebar-btn" data-section="admin-reports" onclick="showAdminSection('reports')">Reports</button>
+        <button class="sidebar-btn" data-section="admin-settings" onclick="showAdminSection('settings')">Settings</button>
+        <button class="sidebar-btn" data-section="admin-audit" onclick="showAdminSection('audit')">Audit Log</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <a href="index.html" class="sidebar-btn" style="text-decoration:none;">Back to Billing (POS)</a>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="pos-header admin-top-header">
+        <div class="pos-header-left">
+          <h1 class="pos-page-title" id="admin-page-title">Dashboard</h1>
+        </div>
+        <div class="pos-header-right">
+          <div class="pos-store-info">Gadget_ Electronics — Management Console</div>
+          <div class="staff-badge-container">
+            <button class="pos-staff-badge" id="admin-staff-btn" onclick="toggleAdminStaffDropdown(event)">
+              <span class="staff-dot"></span> Admin: Active <span class="dropdown-caret">▾</span>
+            </button>
+            <div id="admin-staff-dropdown" class="staff-dropdown-menu hidden">
+              <a href="index.html" class="staff-dropdown-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/></svg>
+                Return to POS
+              </a>
+              <button type="button" class="staff-dropdown-item text-danger" onclick="handleAdminLogout()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- 1. DASHBOARD -->
+      <div id="admin-dashboard" class="pos-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-val" id="stat-sales">₹0</div>
+            <div class="stat-lbl">Total Revenue</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-orders">0</div>
+            <div class="stat-lbl">Transactions / Sales</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-customers">0</div>
+            <div class="stat-lbl">Registered Customers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-points">0</div>
+            <div class="stat-lbl">Points Issued</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-redeemed">0</div>
+            <div class="stat-lbl">Rewards Redeemed</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+          <div>
+            <h3 style="font-size:15px;margin-bottom:8px;">Recent Transactions</h3>
+            <div id="admin-recent-orders"><p class="empty-msg">No transactions yet.</p></div>
+          </div>
+          <div>
+            <h3 style="font-size:15px;margin-bottom:8px;">Inventory Status &amp; Alerts</h3>
+            <div id="admin-low-stock"><p class="empty-msg">All products well-stocked.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. CUSTOMERS -->
+      <div id="admin-customers" class="pos-section hidden">
+        <div class="section-toolbar">
+          <input type="text" id="admin-customer-search" placeholder="Search by name, phone, email, ID..." onkeyup="renderAdminCustomers()">
+          <button class="btn-primary btn-sm" onclick="openAdminNewCustomerModal()">+ Register Customer</button>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Points</th><th>Tier</th><th>Total Spent</th><th>Action</th></tr></thead>
+          <tbody id="admin-customer-tbody"></tbody>
+        </table>
+        <div id="customer-detail-panel" class="detail-card hidden">
+          <div class="detail-header">
+            <h2 id="detail-customer-name"></h2>
+            <button class="btn-sm btn-outline" onclick="closeCustomerDetail()">Close</button>
+          </div>
+          <div id="detail-customer-info"></div>
+          <h3 style="margin-top:14px;font-size:15px;">Purchase History</h3>
+          <div id="detail-customer-orders"></div>
+        </div>
+      </div>
+
+      <!-- 3. PRODUCTS -->
+      <div id="admin-products" class="pos-section hidden">
+        <div class="section-toolbar">
+          <input type="text" id="admin-product-search" placeholder="Search products by name or category..." onkeyup="renderAdminProducts()">
+          <button class="btn-primary btn-sm" onclick="openProductModal()">+ Add Product</button>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="admin-product-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- 4. SALES & TRANSACTIONS -->
+      <div id="admin-transactions" class="pos-section hidden">
+        <div class="section-toolbar">
+          <input type="text" id="admin-txn-search" placeholder="Search transactions by ID, customer name..." onkeyup="renderAdminTransactions()">
+          <select id="admin-txn-payment-filter" onchange="renderAdminTransactions()" style="padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:13px;">
+            <option value="All">All Payment Methods</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+            <option value="Card">Card</option>
+          </select>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Order #</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Points</th><th>Payment</th><th>Status</th></tr></thead>
+          <tbody id="admin-transaction-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- 5. REPORTS -->
+      <div id="admin-reports" class="pos-section hidden">
+        <div class="stats-grid" style="margin-bottom:18px;">
+          <div class="stat-card">
+            <div class="stat-val" id="rep-avg-order">₹0</div>
+            <div class="stat-lbl">Average Transaction Value</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="rep-top-category">—</div>
+            <div class="stat-lbl">Top Selling Category</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="rep-active-cust">0</div>
+            <div class="stat-lbl">Customers with Purchases</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="rep-points-rate">0%</div>
+            <div class="stat-lbl">Points Redemption Rate</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
+            <h3 style="font-size:15px;margin-bottom:10px;">Category Sales Breakdown</h3>
+            <div id="reports-category-breakdown"></div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
+            <h3 style="font-size:15px;margin-bottom:10px;">Top Customers by Spend</h3>
+            <div id="reports-top-customers"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. SETTINGS (CONSOLIDATED) -->
+      <div id="admin-settings" class="pos-section hidden">
+        <!-- Loyalty Earning Rule -->
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:20px;">
+          <h3 style="font-size:15px;margin-bottom:8px;">Configure Loyalty Earning Rule</h3>
+          <p style="font-size:13px;color:var(--gray-600);margin-bottom:12px;">Set how many loyalty points are automatically earned based on purchase spend.</p>
+          <form class="inline-form" onsubmit="saveEarningRule(event)" style="padding:0;background:none;border:none;margin-bottom:8px;">
+            <label>Earn</label>
+            <input type="number" id="rule-points" min="1" required style="width:70px">
+            <label>point(s) for every ₹</label>
+            <input type="number" id="rule-spend" min="1" required style="width:90px">
+            <label>spent in store</label>
+            <button type="submit" class="btn-primary btn-sm">Save Rule</button>
+          </form>
+          <p id="current-rule-display" style="font-size:13px;color:var(--gray-600);"></p>
+        </div>
+
+        <!-- Memberships & Rewards -->
+        <div class="rewards-layout" style="margin-bottom:20px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <h3 style="font-size:15px;">Membership Tiers &amp; Rules</h3>
+            </div>
+            <table class="data-table">
+              <thead><tr><th>Tier</th><th>Min Lifetime Points</th><th>Discount Benefit</th></tr></thead>
+              <tbody id="admin-tiers-tbody">
+                <tr><td><strong>Bronze</strong></td><td>0 pts</td><td>Standard point earning (Base)</td></tr>
+                <tr><td><strong>Silver</strong></td><td>200 pts</td><td>Eligible for priority member deals</td></tr>
+                <tr><td><strong>Gold</strong></td><td>500 pts</td><td>VIP tier + 5% member bill discount</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <h3 style="font-size:15px;">Rewards Catalogue</h3>
+              <button class="btn-primary btn-sm" onclick="openRewardModal()">+ Add Reward</button>
+            </div>
+            <table class="data-table">
+              <thead><tr><th>Reward</th><th>Points Cost</th><th>Discount Value</th><th>Action</th></tr></thead>
+              <tbody id="admin-rewards-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Redemption History -->
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
+          <h3 style="font-size:15px;margin-bottom:8px;">Redemption History</h3>
+          <div id="admin-redemption-log"><p class="empty-msg">No redemptions yet.</p></div>
+        </div>
+      </div>
+
+      <!-- 9. AUDIT LOG -->
+      <div id="admin-audit" class="pos-section hidden">
+        <div class="section-toolbar">
+          <input type="text" id="admin-audit-search" placeholder="Filter audit entries by action or detail..." onkeyup="renderAuditLog()">
+        </div>
+        <table class="data-table">
+          <thead><tr><th>Date &amp; Time</th><th>Action</th><th>User</th><th>Details &amp; Reason</th></tr></thead>
+          <tbody id="admin-audit-tbody"></tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ===== PRODUCT ADD / EDIT MODAL ===== -->
+  <div id="product-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="product-modal-title">Add Product</h2>
+        <button class="modal-close" onclick="closeProductModal()">&times;</button>
+      </div>
+      <form onsubmit="handleSaveProduct(event)">
+        <input type="hidden" id="modal-prod-id">
+        <div class="modal-field"><label>Product Name</label><input type="text" id="modal-prod-name" required></div>
+        <div class="modal-field">
+          <label>Category</label>
+          <select id="modal-prod-category" required style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:14px;">
+            <option value="Laptops">Laptops</option><option value="Smartphones">Smartphones</option>
+            <option value="Headphones">Headphones</option><option value="Smartwatches">Smartwatches</option>
+            <option value="Gaming">Gaming</option><option value="Smart Home">Smart Home</option>
+            <option value="Cameras">Cameras</option><option value="Accessories">Accessories</option>
+          </select>
+        </div>
+        <div class="modal-field"><label>Price (₹)</label><input type="number" id="modal-prod-price" min="1" required></div>
+        <div class="modal-field"><label>Stock Quantity</label><input type="number" id="modal-prod-stock" min="0" required></div>
+        <div class="modal-field">
+          <label>Product Image</label>
+          <input type="file" id="modal-prod-image" accept="image/png,image/jpeg,image/webp,image/svg+xml" onchange="handleProductImageSelect(event)">
+          <div id="modal-prod-preview-wrapper" class="image-preview-wrapper" style="display:none;">
+            <img id="modal-prod-preview-img" src="" alt="Preview" class="image-preview-thumb">
+            <div>
+              <button type="button" class="btn-sm btn-outline text-danger" onclick="removeProductImage()">Remove Image</button>
+              <small style="display:block;color:var(--gray-500);margin-top:4px;">Supported: PNG, JPEG, WEBP, SVG (Max 2MB)</small>
+            </div>
+          </div>
+          <div id="modal-prod-no-image" style="font-size:12px;color:var(--gray-500);margin-top:4px;">No image uploaded (default icon will be used).</div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-sm btn-outline" onclick="closeProductModal()">Cancel</button>
+          <button type="submit" class="btn-primary btn-sm" id="modal-prod-submit-btn">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== REWARD ADD MODAL ===== -->
+  <div id="reward-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Add Reward Item</h2>
+        <button class="modal-close" onclick="closeRewardModal()">&times;</button>
+      </div>
+      <form onsubmit="handleSaveReward(event)">
+        <div class="modal-field"><label>Reward Name (e.g. ₹500 Discount)</label><input type="text" id="modal-reward-name" required></div>
+        <div class="modal-field"><label>Points Cost (Points required to redeem)</label><input type="number" id="modal-reward-cost" min="1" required></div>
+        <div class="modal-field"><label>Discount Value (₹)</label><input type="number" id="modal-reward-value" min="1" required></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-sm btn-outline" onclick="closeRewardModal()">Cancel</button>
+          <button type="submit" class="btn-primary btn-sm">Add Reward</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== NEW CUSTOMER MODAL (ADMIN) ===== -->
+  <div id="admin-new-customer-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Register New Customer</h2>
+        <button class="modal-close" onclick="closeAdminNewCustomerModal()">&times;</button>
+      </div>
+      <form onsubmit="handleAdminRegisterCustomer(event)">
+        <div class="modal-field"><label>Customer Name</label><input type="text" id="admin-new-cust-name" required></div>
+        <div class="modal-field"><label>Phone Number</label><input type="tel" id="admin-new-cust-phone" required></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-sm btn-outline" onclick="closeAdminNewCustomerModal()">Cancel</button>
+          <button type="submit" class="btn-primary btn-sm">Register</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
